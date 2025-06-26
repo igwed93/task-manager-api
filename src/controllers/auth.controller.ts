@@ -211,6 +211,7 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 
         if (!user) {
             res.status(400).json({ message: 'Invalid or expired token' });
+            return;
         }
 
         const hashed = await hashPassword(newPassword);

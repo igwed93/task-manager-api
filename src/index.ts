@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-
+import authRoutes from './routes/auth.routes';
 
 dotenv.config();
 
@@ -17,6 +17,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
