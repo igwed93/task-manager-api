@@ -5,7 +5,7 @@ dotenv.config();
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendVerificationEmail = async (to: string, token: string) => {
-    const verificationUrl = `http://localhost:5050/api/auth/verify-email?token=${token}`;
+    const verificationUrl = `http://localhost:5000/api/auth/verify-email?token=${token}`;
 
     try {
         const data = await resend.emails.send({
@@ -24,7 +24,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
 };
 
 export const sendPasswordResetEmail = async (to: string, token: string) => {
-    const resetUrl = `http://localhost:5050/api/auth/reset-password?token=${token}`;
+    const resetUrl = `http://localhost:5000/api/auth/reset-password?token=${token}`;
 
     try {
         const data = await resend.emails.send({
