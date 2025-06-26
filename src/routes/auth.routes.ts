@@ -15,7 +15,7 @@ import { getAdminDashboard } from '../controllers/admin.controller';
 const router = Router();
 
 // Register route
-router.post('/register', requireAuth, register);
+router.post('/register', register);
 
 // Login route
 router.post('/login', requireAuth, login);
