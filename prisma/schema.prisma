@@ -1,0 +1,44 @@
+// Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id  @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(USER)
+  tasks     Task[]
+  createdAt  DateTime  @default(now())
+
+  // Email verification fields
+  emailVerified       Boolean    @default(false)
+  verificationToken   String?    @unique
+  verificationTokenExpires  DateTime?
+
+  // Password reset fields
+  resetToken          String?    @unique
+  resetTokenExpires   DateTime?
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Task {
+  id        String   @id  @default(uuid())
+  title     String
+  completed Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
