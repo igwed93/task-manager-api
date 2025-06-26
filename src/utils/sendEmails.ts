@@ -9,7 +9,7 @@ export const sendVerificationEmail = async (to: string, token: string) => {
 
     try {
         const data = await resend.emails.send({
-            from: process.env.EMAIL_FROM!,
+            from: process.env.RESEND_FROM_EMAIL!,
             to,
             subject: 'Verify your email address',
             html: `<p>Hello,</p><p>Please click the link below to verify your email address:</p>
@@ -28,7 +28,7 @@ export const sendPasswordResetEmail = async (to: string, token: string) => {
 
     try {
         const data = await resend.emails.send({
-            from: process.env.EMAIL_FROM!,
+            from: process.env.RESEND_FROM_EMAIL!,
             to,
             subject: 'Reset your password',
             html: `<p>Click the link below to reset your password:</p>
