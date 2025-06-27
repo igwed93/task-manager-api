@@ -1,22 +1,28 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    service: process.env.EMAIL_SERVICE, // e.g., 'gmail', 'outlook', etc.
+    auth: {
+        user: process.env.EMAIL_USER, // email address
+        pass: process.env.EMAIL_PASS, // email password
+    },
+});
 
 export const sendVerificationEmail = async (to: string, token: string) => {
     const verificationUrl = `http://localhost:5000/api/auth/verify-email?token=${token}`;
 
     try {
-        const data = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL!,
+        const data = await transporter.sendMail({
+            from: process.env.EMAIL_USER,
             to,
             subject: 'Verify your email address',
             html: `<p>Hello,</p><p>Please click the link below to verify your email address:</p>
                    <a href="${verificationUrl}">${verificationUrl}</a><p>This link expires in 24 hours.</p>`,
         });
 
-        console.log('Verification email sent:', data);
+        console.log('Verification email sent:', data.messageId);
     } catch (error) {
         console.error('Error sending verification email:', error);
         throw new Error('Failed to send verification email');
@@ -27,8 +33,8 @@ export const sendPasswordResetEmail = async (to: string, token: string) => {
     const resetUrl = `http://localhost:5000/api/auth/reset-password?token=${token}`;
 
     try {
-        const data = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL!,
+        const data = await transporter.sendMail({
+            from: process.env.EMAIL_USER,
             to,
             subject: 'Reset your password',
             html: `<p>Click the link below to reset your password:</p>
@@ -36,7 +42,7 @@ export const sendPasswordResetEmail = async (to: string, token: string) => {
                    <p>This link expires in 1 hour.</p>`,
         });
 
-        console.log('Password reset email sent:', data);
+        console.log('Password reset email sent:', data.messageId);
     } catch (error) {
         console.error('Error sending password reset email:', error);
         throw new Error('Failed to send password reset email');
