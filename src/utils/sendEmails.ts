@@ -3,11 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE, // e.g., 'gmail', 'outlook', etc.
-    auth: {
-        user: process.env.EMAIL_USER, // email address
-        pass: process.env.EMAIL_PASS, // email password
-    },
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // TLS, not SSL
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 export const sendVerificationEmail = async (to: string, token: string) => {
@@ -15,10 +17,10 @@ export const sendVerificationEmail = async (to: string, token: string) => {
 
     try {
         const data = await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: `"Task Manager" <${process.env.EMAIL_USER}>`,
             to,
-            subject: 'Verify your email address',
-            html: `<p>Hello,</p><p>Please click the link below to verify your email address:</p>
+            subject: 'Please verify your Task Manager account',
+            html: `<p>Hello,</p><p>Please click the link below to verify your Task Manager Account:</p>
                    <a href="${verificationUrl}">${verificationUrl}</a><p>This link expires in 24 hours.</p>`,
         });
 

@@ -6,9 +6,11 @@ import {
   register,
   login,
   logout,
-  getCurrentUser,
+  getCurrentUserController,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  verifyEmail,
+  deleteUser
 } from '../controllers/auth.controller';
 import { getAdminDashboard } from '../controllers/admin.controller';
 
@@ -23,17 +25,21 @@ router.post('/login', requireAuth, login);
 // Logout route
 router.post('logout', logout);
 
+// verify email route
+router.get('/verify-email', verifyEmail);
+
 
 // Get current authenticated user
 router.get(
   '/me',
   requireAuth,
-  getCurrentUser
+  getCurrentUserController
 );
 
 router.get('/admin-only', requireAuth, authorizeRoles('ADMIN'), getAdminDashboard);
 
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.delete('/me', requireAuth, deleteUser);
 
 export default router;

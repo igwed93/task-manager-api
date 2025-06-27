@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev --respawn src/index.ts",
-    "build": "tsc",
+    "build": "npm run clean && tsc",
+    "clean": "rimraf dist/",
     "start": "node dist/index.js"
   },
   "keywords": [],
@@ -21,7 +22,6 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.3",
-    "resend": "^4.6.0",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0",
     "yamljs": "^0.3.0"
@@ -38,6 +38,7 @@
     "@types/uuid": "^9.0.1",
     "@types/yamljs": "^0.2.34",
     "prisma": "^6.10.1",
+    "rimraf": "^6.0.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3"
   }
