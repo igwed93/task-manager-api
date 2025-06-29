@@ -17,6 +17,8 @@ model User {
   name      String
   role      Role     @default(USER)
   tasks     Task[]
+  sharedTasks    TaskShare[]    @relation("SharedTasks")
+  comments  TaskComment[]
   createdAt  DateTime  @default(now())
 
   // Email verification fields
@@ -40,5 +42,29 @@ model Task {
   completed Boolean  @default(false)
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  shares    TaskShare[]
+  comments  TaskComment[]
   createdAt DateTime @default(now())
+}
+
+model TaskShare {
+  id        String    @id  @default(uuid())
+  taskId    String
+  userId    String
+  task      Task      @relation(fields: [taskId], references: [id])
+  user      User      @relation("SharedTasks", fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+
+  @@unique([taskId, userId])
+}
+
+model TaskComment {
+  id         String   @id @default(uuid())
+  content    String
+  taskId     String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  task       Task     @relation(fields: [taskId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }

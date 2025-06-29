@@ -3,10 +3,16 @@ import { hashPassword, comparePasswords, generateToken } from '../utils/auth';
 import { generateVerificationToken } from '../utils/token';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/sendEmails';
 import { Role } from '../generated/prisma'; // or '@prisma/client' if using default output
+import {
+  NotFoundError,
+  ValidationError,
+  UnauthorizedError,
+  ConflictError,
+} from '../errors/appErrors';
 
 export async function registerUser({ email, password, name, role }: { email: string, password: string, name: string, role?: string }) {
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) throw new Error('User already exists');
+    if (existingUser) throw new ConflictError('User already exists');
 
     const hashed = await hashPassword(password);
     const verificationToken = generateVerificationToken();
@@ -16,7 +22,7 @@ export async function registerUser({ email, password, name, role }: { email: str
             email,
             password: hashed,
             name,
-            role: (role as Role) || Role.USER, // <-- Cast to Role enum
+            role: (role as Role) || Role.USER,
             verificationToken,
             verificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
@@ -33,11 +39,11 @@ export async function registerUser({ email, password, name, role }: { email: str
 
 export async function loginUser({ email, password }: { email: string, password: string }) {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error('Invalid credentials');
-    if (!user.emailVerified) throw new Error('Please verify your email before logging in.');
+    if (!user) throw new UnauthorizedError('Invalid credentials');
+    if (!user.emailVerified) throw new UnauthorizedError('Please verify your email before logging in.');
 
     const isMatch = await comparePasswords(password, user.password);
-    if (!isMatch) throw new Error('Invalid credentials');
+    if (!isMatch) throw new UnauthorizedError('Invalid credentials');
 
     const token = generateToken(user.id, user.role);
     return {
@@ -55,7 +61,7 @@ export async function getCurrentUser(userId: string) {
         where: { id: userId },
         select: { id: true, email: true, name: true },
     });
-    if (!user) throw new Error('User not found');
+    if (!user) throw new NotFoundError('User not found');
     return { user };
 }
 
@@ -66,7 +72,7 @@ export async function verifyUserEmail(token: string) {
             verificationTokenExpires: { gte: new Date() },
         },
     });
-    if (!user) throw new Error('Invalid or expired verification token.');
+    if (!user) throw new ValidationError('Invalid or expired verification token.');
 
     await prisma.user.update({
         where: { id: user.id },
@@ -103,7 +109,7 @@ export async function resetPasswordService(token: string, newPassword: string) {
             resetTokenExpires: { gte: new Date() },
         },
     });
-    if (!user) throw new Error('Invalid or expired token');
+    if (!user) throw new ValidationError('Invalid or expired token');
 
     const hashed = await hashPassword(newPassword);
 
@@ -121,7 +127,7 @@ export async function resetPasswordService(token: string, newPassword: string) {
 
 export async function deleteUserService(userId: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new Error('User not found');
+    if (!user) throw new NotFoundError('User not found');
     await prisma.user.delete({ where: { id: userId } });
     return { message: 'User account deleted successfully.' };
 }

@@ -20,10 +20,10 @@ const router = Router();
 router.post('/register', register);
 
 // Login route
-router.post('/login', requireAuth, login);
+router.post('/login', login);
 
 // Logout route
-router.post('logout', logout);
+router.post('/logout', logout);
 
 // verify email route
 router.get('/verify-email', verifyEmail);
