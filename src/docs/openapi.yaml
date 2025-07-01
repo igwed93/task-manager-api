@@ -114,3 +114,361 @@ paths:
           description: Password reset successful
         '400':
           description: Invalid token or new password missing
+
+  /api/tasks:
+    post:
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTask'
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Title is required
+    get:
+      summary: Get all tasks for the authenticated user
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: pageSize
+          schema: { type: integer }
+        - in: query
+          name: completed
+          schema: { type: boolean }
+        - in: query
+          name: fromDate
+          schema: { type: string, format: date-time }
+        - in: query
+          name: toDate
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: List of tasks
+
+  /api/tasks/{id}:
+    get:
+      summary: Get a task by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Task found
+        '404':
+          description: Task not found
+    put:
+      summary: Update a task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTask'
+      responses:
+        '200':
+          description: Task updated
+        '404':
+          description: Task not found or not yours
+    delete:
+      summary: Delete a task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Task deleted
+        '404':
+          description: Task not found or not yours
+
+  /api/tasks/{id}/toggle:
+    patch:
+      summary: Toggle task completion
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Task completion toggled
+        '404':
+          description: Task not found
+
+  /api/tasks/tasks/share:
+    post:
+      summary: Share a task with another user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShareTask'
+      responses:
+        '200':
+          description: Task shared successfully
+        '404':
+          description: Task or user not found
+
+  /api/tasks/tasks/shared:
+    get:
+      summary: Get tasks shared with the authenticated user
+      responses:
+        '200':
+          description: List of shared tasks
+
+  /api/tasks/{taskId}/comments:
+    post:
+      summary: Add a comment to a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddComment'
+      responses:
+        '201':
+          description: Comment added
+        '400':
+          description: Content is required
+        '404':
+          description: Task not found
+    get:
+      summary: Get comments for a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of comments
+
+  /api/tasks/comments/{commentId}:
+    put:
+      summary: Update a comment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateComment'
+      responses:
+        '200':
+          description: Comment updated
+        '400':
+          description: Content is required
+        '404':
+          description: Comment not found or unauthorized
+    delete:
+      summary: Delete a comment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Comment deleted
+        '404':
+          description: Comment not found or unauthorized
+    get:
+      summary: Get a comment by ID
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Comment found
+        '404':
+          description: Comment not found
+
+  /api/tasks/{taskId}/reactions:
+    post:
+      summary: React to a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reaction'
+      responses:
+        '200':
+          description: Reaction added or updated
+        '400':
+          description: Reaction type is required
+        '404':
+          description: Task not found
+    delete:
+      summary: Remove reaction from a task
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Reaction removed
+        '404':
+          description: Reaction not found
+
+  /api/tasks/comments/{commentId}/reactions:
+    post:
+      summary: React to a comment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Reaction'
+      responses:
+        '200':
+          description: Reaction added or updated
+        '400':
+          description: Reaction type is required
+        '404':
+          description: Comment not found
+    delete:
+      summary: Remove reaction from a comment
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Reaction removed
+        '404':
+          description: Reaction not found
+
+  /api/notifications:
+    get:
+      summary: Get notifications for the authenticated user
+      responses:
+        '200':
+          description: List of notifications
+
+  /api/notifications/{id}/read:
+    patch:
+      summary: Mark a notification as read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Notification marked as read
+
+  /api/admin/users:
+    get:
+      summary: Get all users (admin only)
+      responses:
+        '200':
+          description: List of users
+
+  /api/admin/tasks/{taskId}:
+    delete:
+      summary: Delete any task (admin only)
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Task deleted by admin
+        '404':
+          description: Task not found
+
+  /api/admin/comments/{commentId}:
+    delete:
+      summary: Delete any comment (admin only)
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Comment deleted by admin
+        '404':
+          description: Comment not found
+
+components:
+  schemas:
+    CreateTask:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+    UpdateTask:
+      type: object
+      properties:
+        title:
+          type: string
+        completed:
+          type: boolean
+    ShareTask:
+      type: object
+      required: [taskId, targetUserId]
+      properties:
+        taskId:
+          type: string
+        targetUserId:
+          type: string
+    AddComment:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+    UpdateComment:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+    Reaction:
+      type: object
+      required: [reactionType]
+      properties:
+        reactionType:
+          type: string
