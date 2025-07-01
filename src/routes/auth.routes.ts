@@ -12,15 +12,21 @@ import {
   verifyEmail,
   deleteUser
 } from '../controllers/auth.controller';
-import { getAdminDashboard } from '../controllers/admin.controller';
+import { validateBody } from '../middleware/validation.middeware';
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../validations/user.validation';
 
 const router = Router();
 
 // Register route
-router.post('/register', register);
+router.post('/register', validateBody(registerSchema), register);
 
 // Login route
-router.post('/login', login);
+router.post('/login', validateBody(loginSchema), login);
 
 // Logout route
 router.post('/logout', logout);
@@ -36,10 +42,8 @@ router.get(
   getCurrentUserController
 );
 
-router.get('/admin-only', requireAuth, authorizeRoles('ADMIN'), getAdminDashboard);
-
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+router.post('/forgot-password', validateBody(forgotPasswordSchema), forgotPassword);
+router.post('/reset-password', validateBody(resetPasswordSchema), resetPassword);
 router.delete('/me', requireAuth, deleteUser);
 
 export default router;

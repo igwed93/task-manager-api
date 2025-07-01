@@ -12,6 +12,10 @@ import {
   addCommentToTaskService,
   getTaskCommentsService,
   deleteCommentService,
+  updateCommentService,
+  getCommentByIdService,
+  reactService,
+  removeReactionService
 } from '../services/task.service';
 import { asyncHandler } from '../utils/asyncHandler';
 
@@ -131,3 +135,46 @@ export const deleteComment = asyncHandler(async (req: AuthRequest, res: Response
   res.status(200).json(result);
 });
 
+export const updateComment = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const { commentId } = req.params;
+  const { content } = req.body;
+  const updated = await updateCommentService(userId, commentId, content);
+  res.status(200).json(updated);
+});
+
+export const getCommentById = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { commentId } = req.params;
+  const comment = await getCommentByIdService(commentId);
+  res.status(200).json(comment);
+});
+
+export const reactToTask = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const { taskId } = req.params;
+  const { reactionType } = req.body;
+  const result = await reactService(userId, 'task', taskId, reactionType);
+  res.status(200).json(result);
+});
+
+export const reactToComment = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const { commentId } = req.params;
+  const { reactionType } = req.body;
+  const result = await reactService(userId, 'comment', commentId, reactionType);
+  res.status(200).json(result);
+});
+
+export const removeTaskReaction = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const { taskId } = req.params;
+  const result = await removeReactionService(userId, 'task', taskId);
+  res.status(200).json(result);
+});
+
+export const removeCommentReaction = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.userId;
+  const { commentId } = req.params;
+  const result = await removeReactionService(userId, 'comment', commentId);
+  res.status(200).json(result);
+});

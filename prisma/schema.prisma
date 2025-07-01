@@ -11,24 +11,28 @@ datasource db {
 }
 
 model User {
-  id        String   @id  @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      Role     @default(USER)
-  tasks     Task[]
-  sharedTasks    TaskShare[]    @relation("SharedTasks")
-  comments  TaskComment[]
-  createdAt  DateTime  @default(now())
+  id                String           @id  @default(uuid())
+  email             String           @unique
+  password          String
+  name              String
+  role              Role             @default(USER)
+  tasks             Task[]
+  sharedTasks       TaskShare[]      @relation("SharedTasks")
+  comments          TaskComment[]
+  taskReactions     TaskReaction[]
+  commentReactions  CommentReaction[]
+  notifcations      Notification[]
+  auditLogs         AuditLog[]
+  createdAt         DateTime         @default(now())
 
   // Email verification fields
-  emailVerified       Boolean    @default(false)
-  verificationToken   String?    @unique
+  emailVerified             Boolean    @default(false)
+  verificationToken         String?    @unique
   verificationTokenExpires  DateTime?
 
   // Password reset fields
-  resetToken          String?    @unique
-  resetTokenExpires   DateTime?
+  resetToken                String?    @unique
+  resetTokenExpires         DateTime?
 }
 
 enum Role {
@@ -37,14 +41,15 @@ enum Role {
 }
 
 model Task {
-  id        String   @id  @default(uuid())
-  title     String
-  completed Boolean  @default(false)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  shares    TaskShare[]
-  comments  TaskComment[]
-  createdAt DateTime @default(now())
+  id         String           @id  @default(uuid())
+  title      String
+  completed  Boolean          @default(false)
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  shares     TaskShare[]
+  comments   TaskComment[]
+  reactions  TaskReaction[]
+  createdAt  DateTime         @default(now())
 }
 
 model TaskShare {
@@ -59,12 +64,62 @@ model TaskShare {
 }
 
 model TaskComment {
-  id         String   @id @default(uuid())
+  id         String           @id @default(uuid())
   content    String
   taskId     String
   userId     String
+  createdAt  DateTime         @default(now())
+
+  task       Task             @relation(fields: [taskId], references: [id])
+  user       User             @relation(fields: [userId], references: [id])
+  reactions  CommentReaction[]
+}
+
+model TaskReaction {
+  id        String   @id @default(uuid())
+  type      String   // e.g., "like", "love", "laugh"
+  userId    String
+  taskId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  task      Task     @relation(fields: [taskId], references: [id])
+
+  @@unique([userId, taskId, type])
+}
+
+model CommentReaction {
+  id         String   @id @default(uuid())
+  type       String
+  userId     String
+  commentId  String
   createdAt  DateTime @default(now())
 
-  task       Task     @relation(fields: [taskId], references: [id])
+  user       User        @relation(fields: [userId], references: [id])
+  comment    TaskComment @relation(fields: [commentId], references: [id])
+
+  @@unique([userId, commentId, type])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String
+  details   String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  userId     String
+  type       String   // e.g., 'TASK_SHARED', 'COMMENT_ADDED'
+  message    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
   user       User     @relation(fields: [userId], references: [id])
 }

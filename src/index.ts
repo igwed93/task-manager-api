@@ -7,6 +7,7 @@ import YAML from 'yamljs';
 import authRoutes from './routes/auth.routes';
 import taskRoutes from './routes/task.routes';
 import { errorHandler } from './middleware/error.middleware';
+import { apiLimiter } from './middleware/rateLimiter';
 
 dotenv.config();
 
@@ -23,6 +24,11 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+
+
+// Rate limiting middleware
+app.use('/api/', apiLimiter); // Apply rate limiting to all API routes
+
 
 // Error handling middleware
 app.use(errorHandler);

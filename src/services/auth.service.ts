@@ -9,6 +9,7 @@ import {
   UnauthorizedError,
   ConflictError,
 } from '../errors/appErrors';
+import { logAudit } from '../utils/auditLogger';
 
 export async function registerUser({ email, password, name, role }: { email: string, password: string, name: string, role?: string }) {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -30,6 +31,14 @@ export async function registerUser({ email, password, name, role }: { email: str
 
     await sendVerificationEmail(user.email, verificationToken);
 
+    await logAudit({
+      userId: user.id,
+      action: 'REGISTER',
+      entity: 'User',
+      entityId: user.id,
+      details: 'User registered',
+    });
+
     const token = generateToken(user.id, user.role);
     return {
         user: { id: user.id, email: user.email, name: user.name, role: user.role },
@@ -45,6 +54,14 @@ export async function loginUser({ email, password }: { email: string, password: 
     const isMatch = await comparePasswords(password, user.password);
     if (!isMatch) throw new UnauthorizedError('Invalid credentials');
 
+    await logAudit({
+      userId: user.id,
+      action: 'LOGIN',
+      entity: 'User',
+      entityId: user.id,
+      details: 'User logged in',
+    });
+
     const token = generateToken(user.id, user.role);
     return {
         user: { id: user.id, email: user.email, name: user.name, role: user.role },
@@ -52,7 +69,16 @@ export async function loginUser({ email, password }: { email: string, password: 
     };
 }
 
-export async function logoutUser() {
+export async function logoutUser(userId?: string) {
+    if (userId) {
+      await logAudit({
+        userId,
+        action: 'LOGOUT',
+        entity: 'User',
+        entityId: userId,
+        details: 'User logged out',
+      });
+    }
     return { message: 'Logout successful' };
 }
 
@@ -83,6 +109,14 @@ export async function verifyUserEmail(token: string) {
         },
     });
 
+    await logAudit({
+      userId: user.id,
+      action: 'EMAIL_VERIFIED',
+      entity: 'User',
+      entityId: user.id,
+      details: 'User verified email address',
+    });
+
     return { message: 'Email verified successfully.' };
 }
 
@@ -100,6 +134,14 @@ export async function forgotPasswordService(email: string) {
     });
 
     await sendPasswordResetEmail(user.email, resetToken);
+
+    await logAudit({
+      userId: user.id,
+      action: 'PASSWORD_RESET_REQUEST',
+      entity: 'User',
+      entityId: user.id,
+      details: `Password reset requested for email: ${email}`,
+    });
 }
 
 export async function resetPasswordService(token: string, newPassword: string) {
@@ -122,6 +164,14 @@ export async function resetPasswordService(token: string, newPassword: string) {
         },
     });
 
+    await logAudit({
+      userId: user.id,
+      action: 'PASSWORD_RESET',
+      entity: 'User',
+      entityId: user.id,
+      details: 'User reset password',
+    });
+
     return { message: 'Password reset successful' };
 }
 
@@ -129,5 +179,14 @@ export async function deleteUserService(userId: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundError('User not found');
     await prisma.user.delete({ where: { id: userId } });
+
+    await logAudit({
+      userId,
+      action: 'DELETE',
+      entity: 'User',
+      entityId: userId,
+      details: 'User account deleted',
+    });
+
     return { message: 'User account deleted successfully.' };
 }
