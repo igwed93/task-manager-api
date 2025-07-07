@@ -17,7 +17,10 @@ const swaggerDocument = YAML.load('./src/docs/openapi.yaml');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL, // your frontend URL
+  credentials: true,               // allow cookies/auth headers
+}));
 app.use(cookieParser());
 app.use(express.json());
 

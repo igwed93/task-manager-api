@@ -170,7 +170,7 @@ export async function getTasksService(
     total,
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize),
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
 
